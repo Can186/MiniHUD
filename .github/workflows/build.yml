@@ -22,6 +22,7 @@ jobs:
           cd /tmp/wrapper-gen
           echo "rootProject.name = 'dummy'" > settings.gradle
           gradle wrapper --gradle-version 7.5 --no-daemon
+          mkdir -p $GITHUB_WORKSPACE/gradle/wrapper
           cp gradle/wrapper/gradle-wrapper.jar $GITHUB_WORKSPACE/gradle/wrapper/
           cp gradlew $GITHUB_WORKSPACE/
           cp gradlew.bat $GITHUB_WORKSPACE/
@@ -30,13 +31,12 @@ jobs:
       - name: 编译 APK
         run: |
           cd $GITHUB_WORKSPACE
-          ./gradlew assembleRelease --no-daemon -x lint -x lintVitalRelease
+          ./gradlew assembleDebug --no-daemon -x lint
 
       - name: 组装模块
         run: |
-          ls -la app/build/outputs/apk/release/
-          APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -1)
-          cp "$APK" module/system/app/MiniHUD/MiniHUD.apk
+          mkdir -p module/system/app/MiniHUD
+          cp app/build/outputs/apk/debug/app-debug.apk module/system/app/MiniHUD/MiniHUD.apk
           cd module
           zip -r ../MiniHUD-module.zip . -x "*.DS_Store"
 
@@ -50,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MiniHUD-apk
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/debug/*.apk
