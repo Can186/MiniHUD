@@ -5,6 +5,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Config {
@@ -21,8 +22,17 @@ public class Config {
     public String colorHigh = "#FF0000";
     public int thresholdLow = 50;
     public int thresholdHigh = 80;
-    public String pkgMode = "off";
-    public List<String> pkgList = new ArrayList<>();
+
+    // 默认黑名单：避免浮层挡在管理器和桌面上
+    public String pkgMode = "blacklist";
+    public List<String> pkgList = new ArrayList<>(Arrays.asList(
+        "com.resukisu.resukisu",
+        "com.can186.minihud",
+        "com.android.settings",
+        "com.miui.home",
+        "com.omarea.vtools",
+        "com.termux"
+    ));
 
     private static final String PATH = "/data/adb/minihud/config.json";
 
@@ -56,6 +66,7 @@ public class Config {
             if (o.has("pkgMode")) c.pkgMode = o.getString("pkgMode");
             if (o.has("pkgList")) {
                 JSONArray arr = o.getJSONArray("pkgList");
+                c.pkgList.clear();
                 for (int i = 0; i < arr.length(); i++) c.pkgList.add(arr.getString(i));
             }
         } catch (Exception e) {
