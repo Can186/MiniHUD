@@ -16,11 +16,20 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: 生成 Gradle Wrapper (7.5)
-        run: gradle wrapper --gradle-version 7.5
+      - name: 生成 Gradle Wrapper
+        run: |
+          mkdir -p /tmp/wrapper-gen
+          cd /tmp/wrapper-gen
+          gradle wrapper --gradle-version 7.5 --no-daemon
+          cp gradle/wrapper/gradle-wrapper.jar $GITHUB_WORKSPACE/gradle/wrapper/
+          cp gradlew $GITHUB_WORKSPACE/
+          cp gradlew.bat $GITHUB_WORKSPACE/
+          chmod +x $GITHUB_WORKSPACE/gradlew
 
       - name: 编译 APK
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./gradlew assembleRelease --no-daemon
 
       - name: 组装模块
         run: |
