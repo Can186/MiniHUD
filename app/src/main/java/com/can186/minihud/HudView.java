@@ -38,6 +38,7 @@ public class HudView extends View {
         if (cfg.showDdr) rows++;
         if (cfg.showRam) rows++;
         if (cfg.showBat) rows++;
+        if (cfg.showFps) rows++;
         int width = (int)(cfg.fontSize * 22);
         int height = lineH * rows + 28;
         setMeasuredDimension(width, height);
@@ -46,7 +47,9 @@ public class HudView extends View {
     @Override protected void onDraw(Canvas c) {
         super.onDraw(c);
         int w = getWidth(), h = getHeight();
-        c.drawRoundRect(new RectF(0, 0, w, h), cfg.cornerRadius, cfg.cornerRadius, bg);
+        if (cfg.bgAlpha > 0) {
+            c.drawRoundRect(new RectF(0, 0, w, h), cfg.cornerRadius, cfg.cornerRadius, bg);
+        }
 
         int pad = 14;
         int y = cfg.fontSize + pad;
@@ -78,6 +81,11 @@ public class HudView extends View {
         if (cfg.showBat) {
             tx.setColor(textColor);
             c.drawText("BAT " + data.batPercent + " " + data.batTemp + " " + data.batPower, pad, y, tx);
+            y += lh;
+        }
+        if (cfg.showFps) {
+            tx.setColor(textColor);
+            c.drawText("FPS " + data.fps, pad, y, tx);
         }
     }
 

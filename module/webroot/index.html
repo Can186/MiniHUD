@@ -12,6 +12,7 @@
   label { display:flex; justify-content:space-between; align-items:center; margin:8px 0; font-size:14px; }
   input[type=number], input[type=text], select { background:#222; color:#eee; border:1px solid #333; border-radius:6px; padding:6px 8px; width:130px; }
   input[type=color] { width:44px; height:28px; border:0; background:transparent; }
+  textarea { width:100%; background:#222; color:#eee; border:1px solid #333; border-radius:6px; padding:8px; font-family:monospace; margin-top:6px; box-sizing:border-box; }
   button { background:#6cf; color:#000; border:0; border-radius:8px; padding:12px 20px; font-weight:600; font-size:15px; }
   .status { color:#8c8; font-size:13px; margin-top:8px; }
 </style>
@@ -26,6 +27,7 @@
   <label>DDR<input type="checkbox" id="showDdr" checked></label>
   <label>RAM<input type="checkbox" id="showRam" checked></label>
   <label>电池<input type="checkbox" id="showBat" checked></label>
+  <label>FPS<input type="checkbox" id="showFps" checked></label>
 </div>
 
 <div class="card">
@@ -39,7 +41,7 @@
   <h3>外观</h3>
   <label>字体大小<input type="number" id="fontSize" value="30" min="12" max="80"></label>
   <label>背景色<input type="color" id="bgColor" value="#1a1a1a"></label>
-  <label>背景透明度 %<input type="number" id="bgAlpha" value="60" min="0" max="100"></label>
+  <label>背景透明度 %<input type="number" id="bgAlpha" value="0" min="0" max="100"></label>
   <label>文字颜色<input type="color" id="textColor" value="#ffffff"></label>
   <label>圆角半径<input type="number" id="cornerRadius" value="8" min="0" max="30"></label>
 </div>
@@ -62,9 +64,8 @@
       <option value="blacklist">黑名单（列表内不显示）</option>
     </select>
   </label>
-  <label>包名（一行一个）
-    <textarea id="pkgList" rows="4" style="width:100%;background:#222;color:#eee;border:1px solid #333;border-radius:6px;padding:8px;font-family:monospace;margin-top:6px;"></textarea>
-  </label>
+  <label style="display:block">包名（一行一个）</label>
+  <textarea id="pkgList" rows="4" placeholder="com.tencent.tmgp.dfm"></textarea>
 </div>
 
 <div class="card">
@@ -76,7 +77,7 @@
 function save() {
   const cfg = {
     showCpu: showCpu.checked, showGpu: showGpu.checked, showDdr: showDdr.checked,
-    showRam: showRam.checked, showBat: showBat.checked,
+    showRam: showRam.checked, showBat: showBat.checked, showFps: showFps.checked,
     posX: +posX.value, posY: +posY.value, interval: +interval.value,
     fontSize: +fontSize.value,
     bgColor: bgColor.value, bgAlpha: +bgAlpha.value, textColor: textColor.value,

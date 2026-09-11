@@ -10,8 +10,11 @@ public class MetricsReader {
         public String ddrFreq = "--";
         public String ram = "--", ramPercent = "--";
         public String batTemp = "--", batPower = "--", batPercent = "--";
+        public String fps = "--";
     }
     private long lastIdle = 0, lastTotal = 0;
+    private String cachedFps = "--";
+    private long lastFpsTime = 0;
 
     public Metric read() {
         Metric m = new Metric();
@@ -22,6 +25,7 @@ public class MetricsReader {
         m.ddrFreq = ddrFreq();
         ram(m);
         bat(m);
+        m.fps = getFps();
         return m;
     }
 
@@ -113,6 +117,55 @@ public class MetricsReader {
             int p = Integer.parseInt(read("/sys/class/power_supply/battery/capacity").trim());
             m.batPercent = p + "%";
         } catch (Exception ignored) {}
+    }
+
+    private String getFps() {
+        long now = System.currentTimeMillis();
+        if (now - lastFpsTime < 1000) return cachedFps;
+        lastFpsTime = now;
+        try {
+            Process p1 = Runtime.getRuntime().exec(new String[]{"su", "-c",
+                "dumpsys window windows | grep mCurrentFocus"});
+            BufferedReader r1 = new BufferedReader(new InputStreamReader(p1.getInputStream()));
+            String focus = r1.readLine();
+            r1.close();
+            if (focus == null) { cachedFps = "--"; return cachedFps; }
+
+            Matcher m = Pattern.compile("u0\\s+(\\S+?)/").matcher(focus);
+            if (!m.find()) { cachedFps = "--"; return cachedFps; }
+            String pkg = m.group(1);
+            String layer = pkg + "/" + pkg;
+
+            Process p2 = Runtime.getRuntime().exec(new String[]{"su", "-c",
+                "dumpsys SurfaceFlinger --latency " + layer});
+            BufferedReader r2 = new BufferedReader(new InputStreamReader(p2.getInputStream()));
+            String line;
+            int count = 0;
+            long firstTs = 0, lastTs = 0;
+            int idx = 0;
+            while ((line = r2.readLine()) != null) {
+                if (idx++ == 0) continue;
+                String[] cols = line.trim().split("\\s+");
+                if (cols.length < 2) continue;
+                try {
+                    long ts = Long.parseLong(cols[1]);
+                    if (ts == 0 || ts == Long.MAX_VALUE) continue;
+                    if (firstTs == 0) firstTs = ts;
+                    lastTs = ts;
+                    count++;
+                } catch (Exception ignored) {}
+            }
+            r2.close();
+
+            if (count < 2) { cachedFps = "--"; return cachedFps; }
+            double durationNs = (lastTs - firstTs);
+            if (durationNs <= 0) { cachedFps = "--"; return cachedFps; }
+            double fps = (count - 1) * 1e9 / durationNs;
+            cachedFps = String.format("%.0f", fps);
+        } catch (Exception e) {
+            cachedFps = "--";
+        }
+        return cachedFps;
     }
 
     private String read(String path) {

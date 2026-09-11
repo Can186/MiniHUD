@@ -28,9 +28,18 @@ public class HudService extends Service {
             NotificationChannel nc = new NotificationChannel(ch, "HUD", NotificationManager.IMPORTANCE_MIN);
             ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(nc);
         }
-        startForeground(1, new Notification.Builder(this, ch)
-                .setContentTitle("MiniHUD").setContentText("running")
-                .setSmallIcon(android.R.drawable.ic_menu_info_details).build());
+
+        Intent stopIntent = new Intent(this, HudService.class);
+        stopIntent.setAction("STOP");
+        PendingIntent stopPi = PendingIntent.getService(this, 0, stopIntent,
+                PendingIntent.FLAG_IMMUTABLE);
+
+        Notification.Builder nb = new Notification.Builder(this, ch)
+                .setContentTitle("MiniHUD")
+                .setContentText("running")
+                .setSmallIcon(android.R.drawable.ic_menu_info_details)
+                .addAction(new Notification.Action.Builder(null, "关闭 HUD", stopPi).build());
+        startForeground(1, nb.build());
 
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         reader = new MetricsReader();
@@ -56,6 +65,14 @@ public class HudService extends Service {
 
         running = true;
         handler.post(tick);
+    }
+
+    @Override public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && "STOP".equals(intent.getAction())) {
+            stopSelf();
+            return START_NOT_STICKY;
+        }
+        return START_STICKY;
     }
 
     private final Runnable tick = new Runnable() {

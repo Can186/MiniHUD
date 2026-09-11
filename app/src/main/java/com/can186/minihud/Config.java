@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Config {
-    public boolean showCpu = true, showGpu = true, showDdr = true, showRam = true, showBat = true;
+    public boolean showCpu = true, showGpu = true, showDdr = true, showRam = true, showBat = true, showFps = true;
     public int interval = 500;
     public int fontSize = 30;
     public int posX = 20, posY = 120;
     public String bgColor = "#1A1A1A";
-    public int bgAlpha = 60;
+    public int bgAlpha = 0;
     public String textColor = "#FFFFFF";
     public int cornerRadius = 8;
     public String colorLow = "#00FF00";
@@ -21,7 +21,7 @@ public class Config {
     public String colorHigh = "#FF0000";
     public int thresholdLow = 50;
     public int thresholdHigh = 80;
-    public String pkgMode = "off";   // off / whitelist / blacklist
+    public String pkgMode = "off";
     public List<String> pkgList = new ArrayList<>();
 
     private static final String PATH = "/data/adb/minihud/config.json";
@@ -39,6 +39,7 @@ public class Config {
             if (o.has("showDdr")) c.showDdr = o.getBoolean("showDdr");
             if (o.has("showRam")) c.showRam = o.getBoolean("showRam");
             if (o.has("showBat")) c.showBat = o.getBoolean("showBat");
+            if (o.has("showFps")) c.showFps = o.getBoolean("showFps");
             if (o.has("interval")) c.interval = o.getInt("interval");
             if (o.has("fontSize")) c.fontSize = o.getInt("fontSize");
             if (o.has("posX")) c.posX = o.getInt("posX");
