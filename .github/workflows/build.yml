@@ -16,10 +16,11 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: 生成 Gradle Wrapper (7.5)
+        run: gradle wrapper --gradle-version 7.5
+
       - name: 编译 APK
-        run: |
-          gradle wrapper --gradle-version 7.5 || true
-          ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: 组装模块
         run: |
