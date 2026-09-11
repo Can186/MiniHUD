@@ -1,0 +1,40 @@
+name: Build MiniHUD
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: 编译 APK
+        run: |
+          gradle wrapper --gradle-version 7.5 || true
+          ./gradlew assembleRelease --no-daemon
+
+      - name: 组装模块
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk module/system/app/MiniHUD/MiniHUD.apk
+          cd module
+          zip -r ../MiniHUD-module.zip . -x "*.DS_Store"
+
+      - name: 上传模块
+        uses: actions/upload-artifact@v4
+        with:
+          name: MiniHUD-module
+          path: MiniHUD-module.zip
+
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MiniHUD-apk
+          path: app/build/outputs/apk/release/app-release.apk

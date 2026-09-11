@@ -1,0 +1,7 @@
+id=minihud
+name=MiniHUD Overlay
+version=1.0
+versionCode=1
+author=Can186
+description=MangoHud-style lightweight hardware overlay
+webui=1

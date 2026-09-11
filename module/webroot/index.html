@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MiniHUD 配置</title>
+<style>
+  body { font-family: system-ui; background:#111; color:#eee; margin:0; padding:16px; }
+  h2 { color:#6cf; }
+  .card { background:#1c1c1c; border-radius:12px; padding:16px; margin-bottom:12px; }
+  label { display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
+  input[type=number], input[type=text] { background:#222; color:#eee; border:1px solid #333; border-radius:6px; padding:6px 8px; width:100px; }
+  button { background:#6cf; color:#000; border:0; border-radius:8px; padding:10px 16px; font-weight:600; }
+  .status { color:#8c8; font-size:13px; margin-top:8px; }
+</style>
+</head>
+<body>
+<h2>MiniHUD 配置</h2>
+
+<div class="card">
+  <h3>显示项</h3>
+  <label>CPU<input type="checkbox" id="showCpu" checked></label>
+  <label>GPU<input type="checkbox" id="showGpu" checked></label>
+  <label>DDR<input type="checkbox" id="showDdr" checked></label>
+  <label>RAM<input type="checkbox" id="showRam" checked></label>
+  <label>电池<input type="checkbox" id="showBat" checked></label>
+</div>
+
+<div class="card">
+  <h3>外观</h3>
+  <label>刷新率 (ms)<input type="number" id="interval" value="500" min="100" max="5000" step="100"></label>
+  <label>字体大小<input type="number" id="fontSize" value="30" min="12" max="80"></label>
+  <label>X 坐标<input type="number" id="posX" value="20"></label>
+  <label>Y 坐标<input type="number" id="posY" value="120"></label>
+</div>
+
+<div class="card">
+  <button onclick="save()">保存并重启 HUD</button>
+  <div class="status" id="status"></div>
+</div>
+
+<script>
+function save() {
+  const cfg = {
+    showCpu: document.getElementById('showCpu').checked,
+    showGpu: document.getElementById('showGpu').checked,
+    showDdr: document.getElementById('showDdr').checked,
+    showRam: document.getElementById('showRam').checked,
+    showBat: document.getElementById('showBat').checked,
+    interval: +document.getElementById('interval').value,
+    fontSize: +document.getElementById('fontSize').value,
+    posX: +document.getElementById('posX').value,
+    posY: +document.getElementById('posY').value
+  };
+  const json = JSON.stringify(cfg);
+  // KernelSU WebUI 提供的 ksu.exec
+  if (window.ksu && ksu.exec) {
+    const cmd = `mkdir -p /data/adb/minihud && echo '${json}' > /data/adb/minihud/config.json && am force-stop com.can186.minihud && am start-foreground-service -n com.can186.minihud/.HudService`;
+    ksu.exec(cmd, "{}", (code, out, err) => {
+      document.getElementById('status').innerText = "已保存并重启 (" + code + ")";
+    });
+  } else {
+    document.getElementById('status').innerText = "非 KernelSU 环境，配置未保存";
+  }
+}
+</script>
+</body>
+</html>
