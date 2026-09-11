@@ -20,6 +20,7 @@ jobs:
         run: |
           mkdir -p /tmp/wrapper-gen
           cd /tmp/wrapper-gen
+          echo "rootProject.name = 'dummy'" > settings.gradle
           gradle wrapper --gradle-version 7.5 --no-daemon
           cp gradle/wrapper/gradle-wrapper.jar $GITHUB_WORKSPACE/gradle/wrapper/
           cp gradlew $GITHUB_WORKSPACE/
