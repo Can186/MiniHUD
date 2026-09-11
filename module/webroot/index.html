@@ -6,11 +6,13 @@
 <title>MiniHUD 配置</title>
 <style>
   body { font-family: system-ui; background:#111; color:#eee; margin:0; padding:16px; }
-  h2 { color:#6cf; }
+  h2 { color:#6cf; margin-top:0; }
+  h3 { color:#9ad; margin:16px 0 8px; }
   .card { background:#1c1c1c; border-radius:12px; padding:16px; margin-bottom:12px; }
-  label { display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
-  input[type=number], input[type=text] { background:#222; color:#eee; border:1px solid #333; border-radius:6px; padding:6px 8px; width:100px; }
-  button { background:#6cf; color:#000; border:0; border-radius:8px; padding:10px 16px; font-weight:600; }
+  label { display:flex; justify-content:space-between; align-items:center; margin:8px 0; font-size:14px; }
+  input[type=number], input[type=text], select { background:#222; color:#eee; border:1px solid #333; border-radius:6px; padding:6px 8px; width:130px; }
+  input[type=color] { width:44px; height:28px; border:0; background:transparent; }
+  button { background:#6cf; color:#000; border:0; border-radius:8px; padding:12px 20px; font-weight:600; font-size:15px; }
   .status { color:#8c8; font-size:13px; margin-top:8px; }
 </style>
 </head>
@@ -27,11 +29,42 @@
 </div>
 
 <div class="card">
-  <h3>外观</h3>
-  <label>刷新率 (ms)<input type="number" id="interval" value="500" min="100" max="5000" step="100"></label>
-  <label>字体大小<input type="number" id="fontSize" value="30" min="12" max="80"></label>
+  <h3>位置与刷新</h3>
   <label>X 坐标<input type="number" id="posX" value="20"></label>
   <label>Y 坐标<input type="number" id="posY" value="120"></label>
+  <label>刷新率 ms<input type="number" id="interval" value="500" min="100" max="5000" step="50"></label>
+</div>
+
+<div class="card">
+  <h3>外观</h3>
+  <label>字体大小<input type="number" id="fontSize" value="30" min="12" max="80"></label>
+  <label>背景色<input type="color" id="bgColor" value="#1a1a1a"></label>
+  <label>背景透明度 %<input type="number" id="bgAlpha" value="60" min="0" max="100"></label>
+  <label>文字颜色<input type="color" id="textColor" value="#ffffff"></label>
+  <label>圆角半径<input type="number" id="cornerRadius" value="8" min="0" max="30"></label>
+</div>
+
+<div class="card">
+  <h3>负载颜色</h3>
+  <label>低负载色<input type="color" id="colorLow" value="#00ff00"></label>
+  <label>中负载色<input type="color" id="colorMid" value="#ffff00"></label>
+  <label>高负载色<input type="color" id="colorHigh" value="#ff0000"></label>
+  <label>低阈值 %<input type="number" id="thresholdLow" value="50" min="0" max="100"></label>
+  <label>高阈值 %<input type="number" id="thresholdHigh" value="80" min="0" max="100"></label>
+</div>
+
+<div class="card">
+  <h3>按应用显示</h3>
+  <label>模式
+    <select id="pkgMode">
+      <option value="off">关闭（总是显示）</option>
+      <option value="whitelist">白名单（只在列表内显示）</option>
+      <option value="blacklist">黑名单（列表内不显示）</option>
+    </select>
+  </label>
+  <label>包名（一行一个）
+    <textarea id="pkgList" rows="4" style="width:100%;background:#222;color:#eee;border:1px solid #333;border-radius:6px;padding:8px;font-family:monospace;margin-top:6px;"></textarea>
+  </label>
 </div>
 
 <div class="card">
@@ -42,25 +75,25 @@
 <script>
 function save() {
   const cfg = {
-    showCpu: document.getElementById('showCpu').checked,
-    showGpu: document.getElementById('showGpu').checked,
-    showDdr: document.getElementById('showDdr').checked,
-    showRam: document.getElementById('showRam').checked,
-    showBat: document.getElementById('showBat').checked,
-    interval: +document.getElementById('interval').value,
-    fontSize: +document.getElementById('fontSize').value,
-    posX: +document.getElementById('posX').value,
-    posY: +document.getElementById('posY').value
+    showCpu: showCpu.checked, showGpu: showGpu.checked, showDdr: showDdr.checked,
+    showRam: showRam.checked, showBat: showBat.checked,
+    posX: +posX.value, posY: +posY.value, interval: +interval.value,
+    fontSize: +fontSize.value,
+    bgColor: bgColor.value, bgAlpha: +bgAlpha.value, textColor: textColor.value,
+    cornerRadius: +cornerRadius.value,
+    colorLow: colorLow.value, colorMid: colorMid.value, colorHigh: colorHigh.value,
+    thresholdLow: +thresholdLow.value, thresholdHigh: +thresholdHigh.value,
+    pkgMode: pkgMode.value,
+    pkgList: pkgList.value.split('\n').map(s=>s.trim()).filter(s=>s)
   };
   const json = JSON.stringify(cfg);
-  // KernelSU WebUI 提供的 ksu.exec
   if (window.ksu && ksu.exec) {
-    const cmd = `mkdir -p /data/adb/minihud && echo '${json}' > /data/adb/minihud/config.json && am force-stop com.can186.minihud && am start-foreground-service -n com.can186.minihud/.HudService`;
+    const cmd = `mkdir -p /data/adb/minihud && printf '%s' '${json}' > /data/adb/minihud/config.json && am force-stop com.can186.minihud && am start-foreground-service -n com.can186.minihud/.HudService`;
     ksu.exec(cmd, "{}", (code, out, err) => {
-      document.getElementById('status').innerText = "已保存并重启 (" + code + ")";
+      status.innerText = "已保存并重启 (" + code + ")";
     });
   } else {
-    document.getElementById('status').innerText = "非 KernelSU 环境，配置未保存";
+    status.innerText = "非 KernelSU 环境";
   }
 }
 </script>

@@ -1,3 +1,4 @@
+cat > ~/MiniHUD/app/src/main/java/com/can186/minihud/MetricsReader.java << 'EOF'
 package com.can186.minihud;
 
 import java.io.*;
@@ -125,3 +126,4 @@ public class MetricsReader {
         } catch (Exception e) { return ""; }
     }
 }
+EOF
