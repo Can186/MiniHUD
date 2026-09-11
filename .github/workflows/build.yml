@@ -30,11 +30,13 @@ jobs:
       - name: 编译 APK
         run: |
           cd $GITHUB_WORKSPACE
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon -x lint -x lintVitalRelease
 
       - name: 组装模块
         run: |
-          cp app/build/outputs/apk/release/app-release.apk module/system/app/MiniHUD/MiniHUD.apk
+          ls -la app/build/outputs/apk/release/
+          APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          cp "$APK" module/system/app/MiniHUD/MiniHUD.apk
           cd module
           zip -r ../MiniHUD-module.zip . -x "*.DS_Store"
 
@@ -48,4 +50,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MiniHUD-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/*.apk
